@@ -15,11 +15,22 @@ function WishlistForm() {
     });
 
     const data = await response.json();
-    Swal.fire({
-      icon: 'success',
-      title: 'Success!',
-      text: data.message,
-    });
+
+    if (response.ok) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: data.message,
+      });
+      setName('');
+      setWishlist('');
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: data.message,
+      });
+    }
   };
 
   // Create the snowflake effect

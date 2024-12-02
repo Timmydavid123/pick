@@ -50,11 +50,18 @@ app.get('/wishlist/form', (req, res) => {
 // Submit wishlist (POST request to submit wishlist)
 app.post('/wishlist/submit', async (req, res) => {
   const { name, wishlist } = req.body;
+
   if (!name || !wishlist) {
     return res.status(400).json({ message: 'Name and wishlist are required' });
   }
 
   try {
+    // Check if the user with the same name already exists
+    const existingUser = await Wishlist.findOne({ name });
+    if (existingUser) {
+      return res.status(400).json({ message: 'You have already submitted your wishlist' });
+    }
+
     const newWishlist = new Wishlist({ name, wishlist });
     const savedWishlist = await newWishlist.save();
     res.json({ message: 'Wishlist submitted successfully', id: savedWishlist._id });
