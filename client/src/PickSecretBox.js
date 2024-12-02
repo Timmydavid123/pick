@@ -25,23 +25,30 @@ function PickSecretBox() {
   }, []);
 
   const pickName = async (id) => {
-    const response = await fetch(`https://pick-4.onrender.com/wishlist/pick/${id}`);
-    const data = await response.json();
-    setSelectedUser(data);
-    setModalVisible(true);
+    try {
+      const response = await fetch(`https://pick-4.onrender.com/wishlist/pick/${id}`);
+      const data = await response.json();
+      if (data && data.name && data.wishlist) {
+        setSelectedUser(data);
+        setModalVisible(true);
 
-    // Remove user from list once picked
-    setUsers(users.filter(user => user.id !== id));
+        // Remove user from list once picked
+        setUsers(users.filter(user => user.id !== id));
+      } else {
+        console.error('Invalid data received:', data);
+      }
+    } catch (error) {
+      console.error('Error picking name:', error);
+    }
   };
-
 
   const closeModal = () => {
     setModalVisible(false);
     setSelectedUser(null);
   };
 
-   // Create the snowflake effect
-   const createSnowflakes = () => {
+  // Create the snowflake effect
+  const createSnowflakes = () => {
     const container = document.querySelector('.snowflakes');
     for (let i = 0; i < 50; i++) {
       const snowflake = document.createElement('div');
@@ -54,6 +61,7 @@ function PickSecretBox() {
       container.appendChild(snowflake);
     }
   };
+
   // Run the snowflakes animation on component mount
   useEffect(() => {
     createSnowflakes();
@@ -106,7 +114,7 @@ function PickSecretBox() {
         </div>
       )}
 
-      <footer className="text-black text-center text-sm absolute bottom-4 w-full">
+      <footer className="text-black text-center text-sm absolute bottom-0 w-full py-4">
         <p>Made with ❤️ by DavtevhStudio & Aderonke</p>
       </footer>
     </div>
