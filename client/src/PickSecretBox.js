@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';  // Import useNavigate for routing
 import Swal from 'sweetalert2';
 
 function PickSecretBox() {
   const [users, setUsers] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const navigate = useNavigate();  // Initialize useNavigate
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -45,6 +47,11 @@ function PickSecretBox() {
   const closeModal = () => {
     setModalVisible(false);
     setSelectedUser(null);
+    navigate('/');  // Redirect to home page after closing the modal
+  };
+
+  const handleDownload = () => {
+    navigate('/');  // Redirect to home page after download
   };
 
   // Create the snowflake effect
@@ -106,7 +113,8 @@ function PickSecretBox() {
               <a
                 href={`data:text/plain;charset=utf-8,Name: ${encodeURIComponent(selectedUser.name)}%0AWishlist: ${encodeURIComponent(selectedUser.wishlist)}`}
                 download={`${selectedUser.name}-wishlist.txt`}
-                className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg">
+                className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
+                onClick={handleDownload}>  {/* Redirect after download */}
                 Download
               </a>
             </div>
