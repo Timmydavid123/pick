@@ -7,6 +7,17 @@ const path = require('path');
 const app = express();
 const port = 5000;
 
+// CORS Configuration
+const corsOptions = {
+  origin: 'https://pick-six.vercel.app',  // Allow this domain
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+// Middleware
+app.use(cors(corsOptions));
+app.use(bodyParser.json());
+
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'wishlist-app/build')));
 
@@ -14,10 +25,6 @@ app.use(express.static(path.join(__dirname, 'wishlist-app/build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'wishlist-app/build', 'index.html'));
 });
-
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
 
 // MongoDB connection using the URL from the .env file
 const mongoURI = process.env.MONGO_URI;
