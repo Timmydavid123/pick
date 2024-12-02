@@ -7,19 +7,17 @@ const path = require('path');
 const app = express();
 const port = 5000;
 
-// CORS Configuration
+// CORS Configuration - Adjust it properly
 const corsOptions = {
-  origin: '*',  // Allow this domain
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: 'https://pick-six.vercel.app', // Allow this domain
+  methods: ['GET', 'POST', 'OPTIONS'], // Allow these HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
+  credentials: true, // Include credentials (cookies, authentication headers, etc.)
 };
 
-// Middleware
-app.use(cors(corsOptions));
+// Middleware to handle CORS and preflight requests
+app.use(cors(corsOptions));  // Apply CORS middleware globally
 app.use(bodyParser.json());
-
-// Handle OPTIONS requests explicitly (important for preflight requests)
-app.options('*', cors(corsOptions));  // Explicitly handle OPTIONS request for all routes
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'wishlist-app/build')));
