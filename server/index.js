@@ -9,7 +9,7 @@ const port = 5000;
 
 // CORS Configuration
 const corsOptions = {
-  origin: 'https://pick-six.vercel.app',  // Allow this domain
+  origin: '*',  // Allow this domain
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
@@ -17,6 +17,9 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+
+// Handle OPTIONS requests explicitly (important for preflight requests)
+app.options('*', cors(corsOptions));  // Explicitly handle OPTIONS request for all routes
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'wishlist-app/build')));
