@@ -3,9 +3,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const path = require('path');
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;  // Use environment port or default to 5000
 
 // CORS Configuration - Adjust it properly
 const corsOptions = {
@@ -20,14 +19,6 @@ const corsOptions = {
 // Middleware to handle CORS and preflight requests
 app.use(cors(corsOptions));  // Apply CORS middleware globally
 app.use(bodyParser.json()); // Parse incoming JSON requests
-
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, 'wishlist-app/build')));
-
-// Serve React app for all other routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'wishlist-app/build', 'index.html'));
-});
 
 // MongoDB connection using the URL from the .env file
 const mongoURI = process.env.MONGO_URI;
@@ -46,17 +37,17 @@ const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
 // Routes
 
-// Root Route
+// Root Route for API check
 app.get('/', (req, res) => {
-  res.send('Wishlist API is working!');
+  res.json({ message: 'Wishlist API is working!' });
 });
 
-// Show wishlist form
+// Show wishlist form (simple message for frontend)
 app.get('/wishlist/form', (req, res) => {
   res.json({ message: 'Display wishlist form' });
 });
 
-// Submit wishlist
+// Submit wishlist (POST request to submit wishlist)
 app.post('/wishlist/submit', async (req, res) => {
   const { name, wishlist } = req.body;
   if (!name || !wishlist) {
@@ -72,17 +63,17 @@ app.post('/wishlist/submit', async (req, res) => {
   }
 });
 
-// Display the secret box (all users)
+// Display the wishlists (GET request)
 app.get('/wishlist/pick', async (req, res) => {
   try {
     const wishlists = await Wishlist.find();
     res.json(wishlists);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching wishlists' });
+    res.status(500).json({ message: 'Error fetching wishlists', error: err.message });
   }
 });
 
-// Pick a name and delete it
+// Pick a name and delete it (GET request to delete by ID)
 app.get('/wishlist/pick/:id', async (req, res) => {
   const { id } = req.params;
 
