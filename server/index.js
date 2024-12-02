@@ -1,45 +1,42 @@
+require('dotenv').config();  // Load environment variables from .env file
 const express = require('express');
-const mysql = require('mysql2');
+const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 const port = 5000;
-const path = require('path');
-
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'wishlist-app/build')));
-
-
 
 // Serve React app for all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'wishlist-app/build', 'index.html'));
 });
 
-
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// MySQL database connection
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root', // Replace with your MySQL username
-  password: '', // Replace with your MySQL password
-  database: 'wishlist',
-  port: 3307,
+// MongoDB connection using the URL from the .env file
+const mongoURI = process.env.MONGO_URI;
+
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB connection error:', err));
+
+// Define Schema and Model for Wishlists
+const wishlistSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  wishlist: { type: String, required: true },
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error('Database connection error:', err);
-    return;
-  }
-  console.log('Connected to MySQL database');
-});
+const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
 // Routes
+
+// Root Route
 app.get('/', (req, res) => {
   res.send('Wishlist API is working!');
 });
@@ -50,53 +47,49 @@ app.get('/wishlist/form', (req, res) => {
 });
 
 // Submit wishlist
-app.post('/wishlist/submit', (req, res) => {
+app.post('/wishlist/submit', async (req, res) => {
   const { name, wishlist } = req.body;
   if (!name || !wishlist) {
     return res.status(400).json({ message: 'Name and wishlist are required' });
   }
 
-  const query = 'INSERT INTO wishlists (name, wishlist) VALUES (?, ?)';
-  db.query(query, [name, wishlist], (err, results) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error inserting wishlist' });
-    }
-    res.json({ message: 'Wishlist submitted successfully', id: results.insertId });
-  });
+  try {
+    const newWishlist = new Wishlist({ name, wishlist });
+    const savedWishlist = await newWishlist.save();
+    res.json({ message: 'Wishlist submitted successfully', id: savedWishlist._id });
+  } catch (err) {
+    res.status(500).json({ message: 'Error saving wishlist', error: err.message });
+  }
 });
 
 // Display the secret box (all users)
-app.get('/wishlist/pick', (req, res) => {
-  const query = 'SELECT * FROM wishlists';
-  db.query(query, (err, results) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error fetching wishlists' });
-    }
-    res.json(results);
-  });
+app.get('/wishlist/pick', async (req, res) => {
+  try {
+    const wishlists = await Wishlist.find();
+    res.json(wishlists);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching wishlists' });
+  }
 });
 
 // Pick a name and delete it
-app.get('/wishlist/pick/:id', (req, res) => {
+app.get('/wishlist/pick/:id', async (req, res) => {
   const { id } = req.params;
-  const query = 'SELECT * FROM wishlists WHERE id = ?';
-  
-  db.query(query, [id], (err, results) => {
-    if (err || results.length === 0) {
+
+  try {
+    const user = await Wishlist.findById(id);
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    const user = results[0];
-    db.query('DELETE FROM wishlists WHERE id = ?', [id], (deleteErr) => {
-      if (deleteErr) {
-        return res.status(500).json({ message: 'Error deleting user' });
-      }
-      res.json({ name: user.name, wishlist: user.wishlist });
-    });
-  });
+
+    await Wishlist.findByIdAndDelete(id);
+    res.json({ name: user.name, wishlist: user.wishlist });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting user', error: err.message });
+  }
 });
 
-
-
+// Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });

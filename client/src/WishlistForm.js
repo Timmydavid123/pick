@@ -8,7 +8,7 @@ function WishlistForm() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:3000/wishlist/submit', {
+    const response = await fetch('https://pick-server-zeta.vercel.app/wishlist/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, wishlist }),
