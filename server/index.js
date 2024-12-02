@@ -13,11 +13,13 @@ const corsOptions = {
   methods: ['GET', 'POST', 'OPTIONS'], // Allow these HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
   credentials: true, // Include credentials (cookies, authentication headers, etc.)
+  preflightContinue: false, // Preflight request handling is done automatically by express-cors
+  optionsSuccessStatus: 200, // For legacy browser support (200 OK)
 };
 
 // Middleware to handle CORS and preflight requests
 app.use(cors(corsOptions));  // Apply CORS middleware globally
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // Parse incoming JSON requests
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'wishlist-app/build')));
