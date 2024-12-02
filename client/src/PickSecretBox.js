@@ -9,7 +9,7 @@ function PickSecretBox() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('https://pick-gnrl.vercel.app/wishlist/pick');
+        const response = await fetch('https://pick-4.onrender.com//wishlist/pick');
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -25,7 +25,7 @@ function PickSecretBox() {
   }, []);
 
   const pickName = async (id) => {
-    const response = await fetch(`https://pick-gnrl.vercel.app/wishlist/pick/${id}`);
+    const response = await fetch(`https://pick-4.onrender.com/wishlist/pick/${id}`);
     const data = await response.json();
     setSelectedUser(data);
     setModalVisible(true);
