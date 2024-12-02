@@ -33,3 +33,22 @@ body {
   0% { transform: translateY(0) rotate(0deg); }
   100% { transform: translateY(100vh) rotate(360deg); }
 }
+
+/* Add this CSS to ensure footer stays at the bottom on mobile */
+footer {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  padding: 1rem;
+  background-color: #fff; /* Set the background color */
+  color: #000;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  footer {
+    position: fixed;  /* Fix it to the bottom of the screen */
+    bottom: 0;
+    width: 100%;
+  }
+}

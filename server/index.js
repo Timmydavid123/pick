@@ -74,16 +74,17 @@ app.get('/wishlist/pick', async (req, res) => {
 });
 
 // Pick a name and delete it (GET request to delete by ID)
+// Routes - Modify this to handle ObjectId correctly
 app.get('/wishlist/pick/:id', async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // Extract ID from the route parameter
 
   try {
-    const user = await Wishlist.findById(id);
+    const user = await Wishlist.findById(id); // Use findById with the correct ID
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    await Wishlist.findByIdAndDelete(id);
+    await Wishlist.findByIdAndDelete(id); // Delete using the ObjectId
     res.json({ name: user.name, wishlist: user.wishlist });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting user', error: err.message });

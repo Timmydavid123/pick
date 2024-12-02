@@ -33,7 +33,7 @@ function PickSecretBox() {
         setModalVisible(true);
 
         // Remove user from list once picked
-        setUsers(users.filter(user => user.id !== id));
+        setUsers(users.filter(user => user._id !== id)); // Use _id instead of id
       } else {
         console.error('Invalid data received:', data);
       }
@@ -82,11 +82,11 @@ function PickSecretBox() {
         <h2 className="text-3xl font-bold mb-8 text-center glow">🎅 Choose Your Secret Christmas Box 🎁</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {users.map((user) => (
-            <div key={user.id} className="bg-red-500 bg-opacity-80 p-6 rounded-lg shadow-lg border border-red-700">
+            <div key={user._id} className="bg-red-500 bg-opacity-80 p-6 rounded-lg shadow-lg border border-red-700">
               <h3 className="text-lg font-semibold">Name: <span className="text-yellow-300">********</span></h3>
               <p className="mt-2">Wishlist: <span className="text-yellow-300">********</span></p>
               <button
-                onClick={() => pickName(user.id)}
+                onClick={() => pickName(user._id)} // Use _id
                 className="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition">
                 🎄 Pick Name 🎄
               </button>
