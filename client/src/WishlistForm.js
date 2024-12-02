@@ -4,10 +4,21 @@ import Swal from 'sweetalert2';
 function WishlistForm() {
   const [name, setName] = useState('');
   const [wishlist, setWishlist] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Check if the form has already been submitted using localStorage
+  useEffect(() => {
+    const hasSubmitted = localStorage.getItem('wishlistSubmitted');
+    if (hasSubmitted === 'true') {
+      setIsSubmitting(true); // Disable submission if already submitted
+    }
+  }, []);
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true); // Disable the button before submitting
+
     const response = await fetch('https://pick-4.onrender.com/wishlist/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -22,6 +33,10 @@ function WishlistForm() {
         title: 'Success!',
         text: data.message,
       });
+
+      // Store flag in localStorage to indicate the form has been submitted
+      localStorage.setItem('wishlistSubmitted', 'true');
+
       setName('');
       setWishlist('');
     } else {
@@ -31,6 +46,8 @@ function WishlistForm() {
         text: data.message,
       });
     }
+
+    setIsSubmitting(false); // Enable the button again after the request is processed
   };
 
   // Create the snowflake effect
@@ -85,8 +102,12 @@ function WishlistForm() {
               required
             ></textarea>
           </div>
-          <button type="submit" className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md font-bold transition">
-            Submit
+          <button 
+            type="submit" 
+            className={`w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md font-bold transition ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={isSubmitting}  // Disable the button during submission
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit'}  {/* Change button text */}
           </button>
         </form>
       </div>
