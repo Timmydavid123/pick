@@ -8,7 +8,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<WishlistForm />} />
+        <Route path="/wiahsesss" element={<WishlistForm />} />
         <Route path="/wishlist/pick" element={<PickSecretBox />} />
       </Routes>
     </Router>
