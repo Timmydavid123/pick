@@ -102,13 +102,13 @@ function WishlistForm() {
               required
             ></textarea>
           </div>
-          <button 
-            type="submit" 
-            className={`w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md font-bold transition ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={isSubmitting}  // Disable the button during submission
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit'}  {/* Change button text */}
-          </button>
+          // <button 
+          //   type="submit" 
+          //   className={`w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md font-bold transition ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+          //   disabled={isSubmitting}  // Disable the button during submission
+          // >
+          //   {isSubmitting ? 'Submitting...' : 'Submit'}  {/* Change button text */}
+          // </button>
         </form>
       </div>
 
