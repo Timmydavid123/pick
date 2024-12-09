@@ -16,11 +16,11 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
       });
-      const { token } = response.data;
 
-      // Save token and user info
-      localStorage.setItem("authToken", token);
+      const { token } = response.data;
+      localStorage.setItem("authToken", token); // Save token to local storage
       setToken(token);
+
       const user = jwtDecode(token); // Decode the token to get user info
       setUser(user);
 

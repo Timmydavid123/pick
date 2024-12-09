@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { AuthContext } from './AuthContext';
 
 function WishlistForm() {
   const [name, setName] = useState('');
   const [wishlist, setWishlist] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { token, user } = useContext(AuthContext);
 
   // Check if the form has already been submitted using localStorage
   useEffect(() => {
@@ -19,14 +21,12 @@ function WishlistForm() {
     setIsSubmitting(true); // Disable the button before submitting
   
     // Retrieve the token from localStorage
-    const token = localStorage.getItem('token');
     if (!token) {
       Swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'You must be logged in to submit a wishlist.',
       });
-      console.log(localStorage.getItem('token'));
       return;
     }
   
