@@ -120,6 +120,16 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
+app.get('/wishlist/pick', authenticate, async (req, res) => {
+  try {
+    // Retrieve all available wishlists except the ones owned by the user
+    const wishlists = await Wishlist.find({ user: { $ne: mongoose.Types.ObjectId(req.user.id) } }).populate('user');
+    res.json(wishlists);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching wishlists', error: err.message });
+  }
+});
+
 // Submit wishlist route (authenticated)
 app.post('/wishlist/submit', authenticate, async (req, res) => {
   const { wishlist } = req.body;
