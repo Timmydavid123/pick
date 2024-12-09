@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:5000/auth/login", {
+      const response = await axios.post("https://pick-4.onrender.com/auth/login", {
         email,
         password,
       });
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
   const signup = async (name, email, password) => {
     try {
       setLoading(true);
-      await axios.post("http://localhost:5000/auth/signup", {
+      await axios.post("https://pick-4.onrender.com/auth/signup", {
         name,
         email,
         password,
