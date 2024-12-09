@@ -158,6 +158,11 @@ app.post('/wishlist/pick', async (req, res) => {
     // Validate if userId is provided
     if (!userId) return res.status(400).json({ message: 'User ID is required' });
 
+    // Ensure the logged-in user can't pick themselves
+    if (userId.toString() === req.user.id.toString()) {
+      return res.status(400).json({ message: 'You cannot pick your own wishlist' });
+    }
+
     const user = await User.findById(userId).populate('pickedUser');
 
     if (!user) {
@@ -191,7 +196,6 @@ app.post('/wishlist/pick', async (req, res) => {
     res.status(500).json({ message: 'Error picking wishlist', error: err.message });
   }
 });
-
 // Start server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
