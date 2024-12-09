@@ -11,7 +11,11 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ origin: 'https://pick-six.vercel.app', credentials: true }));
+app.use(cors({
+    origin: ['https://pick-six.vercel.app'], // Allowed origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+    credentials: true, // If using cookies
+}));
 app.use(bodyParser.json());
 
 // MongoDB connection
@@ -95,19 +99,23 @@ app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    console.log("Received login request:", email);
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'User not found' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    // Create token
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
+    console.log("Generated token:", token);
     res.json({ token });
   } catch (err) {
+    console.error("Login Error:", err);
     res.status(500).json({ message: 'Error logging in', error: err.message });
   }
 });
