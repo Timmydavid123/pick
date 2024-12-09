@@ -151,21 +151,23 @@ app.get('/wishlist/pick', async (req, res) => {
 });
 // Pick a wishlist route (authenticated)
 // Pick a wishlist route (without authentication)
-app.post('/wishlist/pick', authenticate, async (req, res) => {
+app.post('/wishlist/pick', async (req, res) => {
   try {
     const { userId } = req.body;
 
+    // Validate if userId is provided
     if (!userId) return res.status(400).json({ message: 'User ID is required' });
 
-    // Ensure the logged-in user can't pick themselves
-    if (userId.toString() === req.user.id.toString()) {
-      return res.status(400).json({ message: 'You cannot pick your own wishlist' });
-    }
-
+    // Manually check for user data if you bypass authentication
     const user = await User.findById(userId).populate('pickedUser');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prevent the user from picking their own wishlist
+    if (userId.toString() === userId.toString()) {
+      return res.status(400).json({ message: 'You cannot pick your own wishlist' });
     }
 
     if (user.hasPicked) {
@@ -195,7 +197,8 @@ app.post('/wishlist/pick', authenticate, async (req, res) => {
     console.error('Error picking wishlist:', err);
     res.status(500).json({ message: 'Error picking wishlist', error: err.message });
   }
-});// Start server
+});
+// Start server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });

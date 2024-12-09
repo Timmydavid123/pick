@@ -27,22 +27,22 @@ function PickSecretBox() {
     fetchUsers();
   }, []);
 
-  // Handle picking a wishlist
   const pickName = async (id) => {
     try {
       const response = await fetch('https://pick-4.onrender.com/wishlist/pick', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authtoken')}`, // Send auth token
+          // Remove the Authorization header if you don't want to send a token
         },
         body: JSON.stringify({ userId: id }), // Send the selected user ID
       });
+  
       const data = await response.json();
       if (data && data.pickedUser) {
         setSelectedUser(data.pickedUser);
         setModalVisible(true);
-
+  
         // Remove user from list once picked
         setUsers(users.filter(user => user._id !== id));
       } else {
