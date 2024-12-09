@@ -1,104 +1,171 @@
-require('dotenv').config();  // Load environment variables from .env file
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const { body, validationResult } = require('express-validator');
+
 const app = express();
-const port = process.env.PORT || 5000;  // Use environment port or default to 5000
+const port = process.env.PORT || 5000;
 
-// CORS Configuration - Adjust it properly
-const corsOptions = {
-  origin: 'https://pick-six.vercel.app', // Allow this domain
-  methods: ['GET', 'POST', 'OPTIONS'], // Allow these HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
-  credentials: true, // Include credentials (cookies, authentication headers, etc.)
-  preflightContinue: false, // Preflight request handling is done automatically by express-cors
-  optionsSuccessStatus: 200, // For legacy browser support (200 OK)
-};
+// Middleware
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(bodyParser.json());
 
-// Middleware to handle CORS and preflight requests
-app.use(cors(corsOptions));  // Apply CORS middleware globally
-app.use(bodyParser.json()); // Parse incoming JSON requests
-
-// MongoDB connection using the URL from the .env file
-const mongoURI = process.env.MONGO_URI;
-
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+// MongoDB connection
+mongoose
+  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// Define Schema and Model for Wishlists
-const wishlistSchema = new mongoose.Schema({
+// Models
+
+// User Schema
+const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  hasPicked: { type: Boolean, default: false },
+  pickedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'Wishlist', default: null }, // Stores picked user
+});
+
+const User = mongoose.model('User', userSchema);
+
+// Wishlist Schema
+const wishlistSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   wishlist: { type: String, required: true },
 });
 
 const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
-// Routes
-
-// Root Route for API check
-app.get('/', (req, res) => {
-  res.json({ message: 'Wishlist API is working!' });
-});
-
-// Show wishlist form (simple message for frontend)
-app.get('/wishlist/form', (req, res) => {
-  res.json({ message: 'Display wishlist form' });
-});
-
-// Submit wishlist (POST request to submit wishlist)
-app.post('/wishlist/submit', async (req, res) => {
-  const { name, wishlist } = req.body;
-
-  if (!name || !wishlist) {
-    return res.status(400).json({ message: 'Name and wishlist are required' });
-  }
+// Utility function: Authenticate middleware
+const authenticate = async (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ message: 'Access Denied' });
 
   try {
-    // Check if the user with the same name already exists
-    const existingUser = await Wishlist.findOne({ name });
-    if (existingUser) {
-      return res.status(400).json({ message: 'You have already submitted your wishlist' });
-    }
+    const verified = jwt.verify(token.split(' ')[1], process.env.JWT_SECRET);
+    req.user = verified;
+    next();
+  } catch (err) {
+    res.status(400).json({ message: 'Invalid Token' });
+  }
+};
 
-    const newWishlist = new Wishlist({ name, wishlist });
-    const savedWishlist = await newWishlist.save();
-    res.json({ message: 'Wishlist submitted successfully', id: savedWishlist._id });
+// Routes
+
+// Signup route
+app.post(
+  '/auth/signup',
+  [
+    body('name').notEmpty().withMessage('Name is required'),
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const { name, email, password } = req.body;
+
+    try {
+      // Check if user already exists
+      const existingUser = await User.findOne({ email });
+      if (existingUser) return res.status(400).json({ message: 'User already exists' });
+
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create and save user
+      const user = new User({ name, email, password: hashedPassword });
+      await user.save();
+
+      res.status(201).json({ message: 'User registered successfully' });
+    } catch (err) {
+      res.status(500).json({ message: 'Error creating user', error: err.message });
+    }
+  }
+);
+
+// Login route
+app.post('/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+    // Create token
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    res.json({ token });
+  } catch (err) {
+    res.status(500).json({ message: 'Error logging in', error: err.message });
+  }
+});
+
+// Submit wishlist route (authenticated)
+app.post('/wishlist/submit', authenticate, async (req, res) => {
+  const { wishlist } = req.body;
+
+  if (!wishlist) return res.status(400).json({ message: 'Wishlist is required' });
+
+  try {
+    const existingWishlist = await Wishlist.findOne({ user: req.user.id });
+    if (existingWishlist)
+      return res.status(400).json({ message: 'You have already submitted a wishlist' });
+
+    const newWishlist = new Wishlist({ user: req.user.id, wishlist });
+    await newWishlist.save();
+
+    res.json({ message: 'Wishlist submitted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Error saving wishlist', error: err.message });
   }
 });
 
-// Display the wishlists (GET request)
-app.get('/wishlist/pick', async (req, res) => {
+// Pick a wishlist route (authenticated)
+app.post('/wishlist/pick', authenticate, async (req, res) => {
   try {
-    const wishlists = await Wishlist.find();
-    res.json(wishlists);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching wishlists', error: err.message });
-  }
-});
+    const user = await User.findById(req.user.id).populate('pickedUser');
 
-// Pick a name and delete it (GET request to delete by ID)
-// Routes - Modify this to handle ObjectId correctly
-app.get('/wishlist/pick/:id', async (req, res) => {
-  const { id } = req.params; // Extract ID from the route parameter
-
-  try {
-    const user = await Wishlist.findById(id); // Use findById with the correct ID
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (user.hasPicked) {
+      return res.status(400).json({
+        message: 'You have already picked a wishlist',
+        pickedUser: user.pickedUser,
+      });
     }
 
-    await Wishlist.findByIdAndDelete(id); // Delete using the ObjectId
-    res.json({ name: user.name, wishlist: user.wishlist });
+    // Find a random wishlist that doesn't belong to the user
+    const wishlistToPick = await Wishlist.aggregate([
+      { $match: { user: { $ne: mongoose.Types.ObjectId(req.user.id) } } },
+      { $sample: { size: 1 } },
+    ]);
+
+    if (wishlistToPick.length === 0) {
+      return res.status(404).json({ message: 'No wishlists available to pick' });
+    }
+
+    const pickedWishlist = wishlistToPick[0];
+    user.hasPicked = true;
+    user.pickedUser = pickedWishlist.user;
+    await user.save();
+
+    res.json({ message: 'Wishlist picked successfully', pickedUser: pickedWishlist });
   } catch (err) {
-    res.status(500).json({ message: 'Error deleting user', error: err.message });
+    res.status(500).json({ message: 'Error picking wishlist', error: err.message });
   }
 });
 
-// Start the server
+// Start server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });

@@ -29,3 +29,35 @@ body {
   0% { transform: translateY(0) rotate(0deg); }
   100% { transform: translateY(100vh) rotate(360deg); }
 }
+
+
+.form-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+input {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 16px;
+}
+button {
+  padding: 10px 15px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #0056b3;
+}
+.error {
+  color: red;
+  font-size: 14px;
+}
