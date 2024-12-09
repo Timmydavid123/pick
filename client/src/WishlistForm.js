@@ -19,14 +19,14 @@ function WishlistForm() {
     setIsSubmitting(true); // Disable the button before submitting
   
     // Retrieve the token from localStorage
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
     if (!token) {
       Swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'You must be logged in to submit a wishlist.',
       });
-      setIsSubmitting(false);
+      console.log(localStorage.getItem('token'));
       return;
     }
   
