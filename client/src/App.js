@@ -31,13 +31,9 @@ function App() {
             }
           />
           <Route
-            path="/wishlist/pick"
-            element={
-              <ProtectedRoute>
-                <PickSecretBox />
-              </ProtectedRoute>
-            }
-          />
+          path="/wishlist/pick"
+          element={<PickSecretBox />}
+        />
         </Routes>
       </Router>
     </AuthProvider>
