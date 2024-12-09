@@ -12,18 +12,23 @@ function PickSecretBox() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('https://pick-4.onrender.com/wishlist/pick');
+        const userId = localStorage.getItem('userId'); // Retrieve the logged-in user's ID
+        const response = await fetch('https://pick-4.onrender.com/wishlist/pick', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`, // Assuming token is stored in local storage
+          },
+        });
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        setUsers(Array.isArray(data) ? data : []);
+        setUsers(data.filter(user => user._id !== userId)); // Exclude logged-in user
       } catch (error) {
         console.error('Fetch error:', error);
-        setUsers([]);  // Fallback to an empty array on error
+        setUsers([]); // Fallback to an empty array on error
       }
     };
-
+  
     fetchUsers();
   }, []);
 

@@ -166,7 +166,7 @@ app.post('/wishlist/pick', async (req, res) => {
     }
 
     // Prevent the user from picking their own wishlist
-    if (userId.toString() === userId.toString()) {
+    if (userId.toString() === req.user.id.toString()) {
       return res.status(400).json({ message: 'You cannot pick your own wishlist' });
     }
 
