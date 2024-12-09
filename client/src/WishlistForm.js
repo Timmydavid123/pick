@@ -14,30 +14,43 @@ function WishlistForm() {
     }
   }, []);
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true); // Disable the button before submitting
-
+  
+    // Retrieve the token from localStorage
+    const token = localStorage.getItem('token'); 
+    if (!token) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'You must be logged in to submit a wishlist.',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+  
     const response = await fetch('https://pick-4.onrender.com/wishlist/submit', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, wishlist }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+      },
+      body: JSON.stringify({ wishlist }),
     });
-
+  
     const data = await response.json();
-
+  
     if (response.ok) {
       Swal.fire({
         icon: 'success',
         title: 'Success!',
         text: data.message,
       });
-
+  
       // Store flag in localStorage to indicate the form has been submitted
       localStorage.setItem('wishlistSubmitted', 'true');
-
-      setName('');
+  
       setWishlist('');
     } else {
       Swal.fire({
@@ -46,7 +59,7 @@ function WishlistForm() {
         text: data.message,
       });
     }
-
+  
     setIsSubmitting(false); // Enable the button again after the request is processed
   };
 
