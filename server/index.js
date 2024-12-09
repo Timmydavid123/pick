@@ -151,11 +151,10 @@ app.get('/wishlist/pick', async (req, res) => {
 });
 // Pick a wishlist route (authenticated)
 // Pick a wishlist route (without authentication)
-app.post('/wishlist/pick', async (req, res) => {
+app.post('/wishlist/pick', authenticate, async (req, res) => {
   try {
-    const { userId } = req.body;  // Assuming userId is passed in the request body
+    const { userId } = req.body;
 
-    // Validate if userId is provided
     if (!userId) return res.status(400).json({ message: 'User ID is required' });
 
     // Ensure the logged-in user can't pick themselves
@@ -193,10 +192,10 @@ app.post('/wishlist/pick', async (req, res) => {
 
     res.json({ message: 'Wishlist picked successfully', pickedUser: pickedWishlist });
   } catch (err) {
+    console.error('Error picking wishlist:', err);
     res.status(500).json({ message: 'Error picking wishlist', error: err.message });
   }
-});
-// Start server
+});// Start server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
