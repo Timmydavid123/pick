@@ -38,7 +38,7 @@ function PickSecretBox() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Remove the Authorization header if you don't want to send a token
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Make sure this token is set correctly
         },
         body: JSON.stringify({ userId: id }), // Send the selected user ID
       });

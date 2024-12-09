@@ -151,9 +151,10 @@ app.get('/wishlist/pick', async (req, res) => {
 });
 // Pick a wishlist route (authenticated)
 // Pick a wishlist route (without authentication)
-app.post('/wishlist/pick', async (req, res) => {
+app.post('/wishlist/pick', authenticate, async (req, res) => {
   try {
     const { userId } = req.body;
+    console.log("Received userId:", userId);
 
     // Validate if userId is provided
     if (!userId) return res.status(400).json({ message: 'User ID is required' });
