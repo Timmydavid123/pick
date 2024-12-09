@@ -120,16 +120,6 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-app.get('/wishlist/pick', authenticate, async (req, res) => {
-  try {
-    // Retrieve all available wishlists except the ones owned by the user
-    const wishlists = await Wishlist.find({ user: { $ne: mongoose.Types.ObjectId(req.user.id) } }).populate('user');
-    res.json(wishlists);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching wishlists', error: err.message });
-  }
-});
-
 // Submit wishlist route (authenticated)
 app.post('/wishlist/submit', authenticate, async (req, res) => {
   const { wishlist } = req.body;
@@ -150,10 +140,24 @@ app.post('/wishlist/submit', authenticate, async (req, res) => {
   }
 });
 
-// Pick a wishlist route (authenticated)
-app.post('/wishlist/pick', authenticate, async (req, res) => {
+app.get('/wishlist/pick', async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('pickedUser');
+    // Retrieve all available wishlists except the ones owned by the user
+    const wishlists = await Wishlist.find({}).populate('user');
+    res.json(wishlists);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching wishlists', error: err.message });
+  }
+});
+// Pick a wishlist route (authenticated)
+app.post('/wishlist/pick', async (req, res) => {
+  try {
+    const { userId } = req.body;  // Assuming userId is passed in the request body
+
+    // Validate if userId is provided
+    if (!userId) return res.status(400).json({ message: 'User ID is required' });
+
+    const user = await User.findById(userId).populate('pickedUser');
 
     if (user.hasPicked) {
       return res.status(400).json({
@@ -164,8 +168,8 @@ app.post('/wishlist/pick', authenticate, async (req, res) => {
 
     // Find a random wishlist that doesn't belong to the user
     const wishlistToPick = await Wishlist.aggregate([
-      { $match: { user: { $ne: mongoose.Types.ObjectId(req.user.id) } } },
-      { $sample: { size: 1 } },
+      { $match: { user: { $ne: mongoose.Types.ObjectId(userId) } } }, // Exclude user's own wishlist
+      { $sample: { size: 1 } }, // Pick a random wishlist
     ]);
 
     if (wishlistToPick.length === 0) {
