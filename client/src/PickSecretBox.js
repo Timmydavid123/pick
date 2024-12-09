@@ -8,7 +8,7 @@ function PickSecretBox() {
   const [selectedUser, setSelectedUser] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch users
+  // Fetch users, excluding the logged-in user
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -31,7 +31,7 @@ function PickSecretBox() {
   const pickName = async (id) => {
     try {
       const response = await fetch('https://pick-4.onrender.com/wishlist/pick', {
-        method: 'POST', // Change to POST request
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('authtoken')}`, // Send auth token

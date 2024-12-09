@@ -150,6 +150,7 @@ app.get('/wishlist/pick', async (req, res) => {
   }
 });
 // Pick a wishlist route (authenticated)
+// Pick a wishlist route (without authentication)
 app.post('/wishlist/pick', async (req, res) => {
   try {
     const { userId } = req.body;  // Assuming userId is passed in the request body
@@ -158,6 +159,10 @@ app.post('/wishlist/pick', async (req, res) => {
     if (!userId) return res.status(400).json({ message: 'User ID is required' });
 
     const user = await User.findById(userId).populate('pickedUser');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     if (user.hasPicked) {
       return res.status(400).json({
