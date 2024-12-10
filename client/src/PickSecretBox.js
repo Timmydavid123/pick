@@ -6,6 +6,7 @@ function PickSecretBox() {
   const [users, setUsers] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   // Fetch users, excluding the logged-in user
@@ -26,6 +27,7 @@ function PickSecretBox() {
       } catch (error) {
         console.error('Fetch error:', error);
         setUsers([]); // Fallback to an empty array on error
+        setErrorMessage(error.message);
       }
     };
   
@@ -50,12 +52,14 @@ function PickSecretBox() {
   
         // Remove user from list once picked
         setUsers(users.filter(user => user._id !== id));
+        setErrorMessage('');
       } else {
         Swal.fire('Error', 'Something went wrong. Please try again!', 'error');
       }
     } catch (error) {
       console.error('Error picking name:', error);
       Swal.fire('Error', 'An error occurred while picking the wishlist.', 'error');
+      Swal.fire('Error', error.message, 'error');
     }
   };
 
@@ -69,6 +73,11 @@ function PickSecretBox() {
     <div className="py-10">
       <div className="container mx-auto max-w-4xl text-white">
         <h2 className="text-3xl font-bold mb-8 text-center glow">🎅 Choose Your Secret Christmas Box 🎁</h2>
+        {errorMessage && (
+          <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
+            {errorMessage}
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {users.map((user) => (
             <div key={user._id} className="bg-red-500 bg-opacity-80 p-6 rounded-lg shadow-lg border border-red-700">
