@@ -57,6 +57,7 @@ function PickSecretBox() {
       console.error('Error picking name:', error);
       Swal.fire('Error', 'An error occurred while picking the wishlist.', 'error');
     }
+    console.log("Selected userId:", user.user._id);
   };
 
   const closeModal = () => {
@@ -75,7 +76,7 @@ function PickSecretBox() {
               <h3 className="text-lg font-semibold">Name: <span className="text-yellow-300">********</span></h3>
               <p className="mt-2">Wishlist: <span className="text-yellow-300">********</span></p>
               <button
-                onClick={() => pickName(user._id)}
+                onClick={() => pickName(user.user._id)} // Send user._id (User ID) instead of _id (Wishlist ID)
                 className="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition">
                 🎄 Pick Name 🎄
               </button>

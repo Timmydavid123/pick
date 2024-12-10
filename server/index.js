@@ -146,52 +146,48 @@ app.get('/wishlist/pick', async (req, res) => {
     const wishlists = await Wishlist.find({}).populate('user');
     res.json(wishlists);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching wishlists', error: err.message });
+    res.status(500).json({ message: 'Error f etching wishlists', error: err.message });
   }
 });
 // Pick a wishlist route (authenticated)
 // Pick a wishlist route (without authentication)
 app.post('/wishlist/pick', authenticate, async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.body; // Expecting the user's ID here
     console.log("Received userId:", userId);
 
-    // Validate if userId is provided
-    if (!userId) return res.status(400).json({ message: 'User ID is required' });
-
-    // Manually check for user data if you bypass authentication
-    const user = await User.findById(userId).populate('pickedUser');
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
     }
 
-    // Prevent the user from picking their own wishlist
-    if (userId.toString() === req.user.id.toString()) {
-      return res.status(400).json({ message: 'You cannot pick your own wishlist' });
+    // Validate the user making the request
+    const requestingUser = await User.findById(req.user.id);
+    if (!requestingUser) {
+      return res.status(404).json({ message: 'Requesting user not found' });
     }
 
-    if (user.hasPicked) {
+    if (requestingUser.hasPicked) {
       return res.status(400).json({
         message: 'You have already picked a wishlist',
-        pickedUser: user.pickedUser,
+        pickedUser: requestingUser.pickedUser,
       });
     }
 
-    // Find a random wishlist that doesn't belong to the user
-    const wishlistToPick = await Wishlist.aggregate([
-      { $match: { user: { $ne: mongoose.Types.ObjectId(userId) } } }, // Exclude user's own wishlist
-      { $sample: { size: 1 } }, // Pick a random wishlist
-    ]);
-
-    if (wishlistToPick.length === 0) {
-      return res.status(404).json({ message: 'No wishlists available to pick' });
+    // Prevent picking their own wishlist
+    if (userId === req.user.id) {
+      return res.status(400).json({ message: 'You cannot pick your own wishlist' });
     }
 
-    const pickedWishlist = wishlistToPick[0];
-    user.hasPicked = true;
-    user.pickedUser = pickedWishlist.user;
-    await user.save();
+    // Ensure the userId exists and find the associated wishlist
+    const pickedWishlist = await Wishlist.findOne({ user: userId }).populate('user');
+    if (!pickedWishlist) {
+      return res.status(404).json({ message: 'Wishlist not found for the provided user' });
+    }
+
+    // Update the requesting user
+    requestingUser.hasPicked = true;
+    requestingUser.pickedUser = userId;
+    await requestingUser.save();
 
     res.json({ message: 'Wishlist picked successfully', pickedUser: pickedWishlist });
   } catch (err) {
