@@ -47,7 +47,7 @@ function PickSecretBox() {
   
       const data = await response.json();
       if (data && data.pickedUser) {
-        setSelectedUser(data.pickedUser);
+        setSelectedUser(data.pickedUser); // Update selectedUser with the picked user details
         setModalVisible(true);
   
         // Remove user from list once picked
@@ -84,10 +84,10 @@ function PickSecretBox() {
               <h3 className="text-lg font-semibold">Name: <span className="text-yellow-300">********</span></h3>
               <p className="mt-2">Wishlist: <span className="text-yellow-300">********</span></p>
               <button
-              onClick={() => pickName(user.user._id)} // Send user._id (User ID) instead of _id (Wishlist ID)
-              className="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition">
-              🎄 Pick Name 🎄
-            </button>
+                onClick={() => pickName(user.user._id)} // Send user._id (User ID) instead of _id (Wishlist ID)
+                className="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition">
+                🎄 Pick Name 🎄
+              </button>
             </div>
           ))}
         </div>

@@ -154,7 +154,6 @@ app.get('/wishlist/pick', async (req, res) => {
 app.post('/wishlist/pick', authenticate, async (req, res) => {
   try {
     const { userId } = req.body; // Expecting the user's ID here
-    console.log("Received userId:", userId);
 
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required' });
@@ -169,7 +168,7 @@ app.post('/wishlist/pick', authenticate, async (req, res) => {
     if (requestingUser.hasPicked) {
       return res.status(400).json({
         message: 'You have already picked a wishlist',
-        pickedUser: requestingUser.pickedUser,
+        pickedUser: requestingUser.pickedUserDetails,
       });
     }
 
@@ -184,12 +183,22 @@ app.post('/wishlist/pick', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'Wishlist not found for the provided user' });
     }
 
-    // Update the requesting user
+    // Store picked details in the requesting user's account
     requestingUser.hasPicked = true;
     requestingUser.pickedUser = userId;
+    requestingUser.pickedUserDetails = {
+      name: pickedWishlist.user.name,
+      wishlist: pickedWishlist.wishlist,
+    };
     await requestingUser.save();
 
-    res.json({ message: 'Wishlist picked successfully', pickedUser: pickedWishlist });
+    // Delete the picked wishlist from the database
+    await Wishlist.deleteOne({ user: userId });
+
+    res.json({
+      message: 'Wishlist picked successfully',
+      pickedUser: requestingUser.pickedUserDetails,
+    });
   } catch (err) {
     console.error('Error picking wishlist:', err);
     res.status(500).json({ message: 'Error picking wishlist', error: err.message });
