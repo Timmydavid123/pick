@@ -13,7 +13,7 @@ const Login = () => {
     e.preventDefault();
     const response = await login(email, password);
     if (response.success) {
-      navigate("/"); // Redirect to home page on success
+      navigate("/wishlist/pick"); // Redirect to home page on success
     } else {
       setError(response.message);
     }
