@@ -40,12 +40,7 @@ const Login = () => {
         />
         <button type="submit">Login</button>
       </form>
-      // <p>
-      //   Don't have an account?{" "}
-      //   <a href="/signup" style={{ color: "blue", textDecoration: "underline" }}>
-      //     Sign up here
-      //   </a>
-      // </p>
+     
     </div>
   );
 };
