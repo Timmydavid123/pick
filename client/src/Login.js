@@ -13,7 +13,7 @@ const Login = () => {
     e.preventDefault();
     const response = await login(email, password);
     if (response.success) {
-      navigate("/wishlist/pick"); // Redirect to home page on success
+      navigate("/"); // Redirect to home page on success
     } else {
       setError(response.message);
     }
@@ -40,7 +40,12 @@ const Login = () => {
         />
         <button type="submit">Login</button>
       </form>
-     
+      <p>
+        Don't have an account?{" "}
+        <a href="/signup" style={{ color: "red", textDecoration: "underline" }}>
+          Sign up here
+        </a>
+      </p>
     </div>
   );
 };
